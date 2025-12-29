@@ -1,17 +1,17 @@
 package com.example.library.service;
 
 import com.example.library.entity.Books;
-import java.util.List;
+import org.springframework.http.ResponseEntity;
 
 public interface BookService {
 
-    List<Books> getAllBooks();
+    ResponseEntity<Object> getAllBooks();
 
-    Books addBook(Books book);
+    ResponseEntity<Object> addBook(Books book);
 
-    Books getBookByName(String title);
+    ResponseEntity<Object> getBookByName(String title);
 
-    void deleteBook(Integer id);
+    ResponseEntity<Object> updateBook(Integer id, Books book);
 
-    Books updateBook(Integer id, Books book);
+    ResponseEntity<Object> deleteBook(Integer id);
 }

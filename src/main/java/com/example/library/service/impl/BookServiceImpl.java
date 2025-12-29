@@ -1,11 +1,14 @@
 package com.example.library.service.impl;
 
-
-
 import com.example.library.entity.Books;
+import com.example.library.exception.BadRequestException;
+import com.example.library.exception.ResourceNotFoundException;
 import com.example.library.repository.BookRepository;
 import com.example.library.service.BookService;
+import com.example.library.util.ApiResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,30 +20,41 @@ public class BookServiceImpl implements BookService {
     private BookRepository bookRepository;
 
     @Override
-    public List<Books> getAllBooks() {
-        return bookRepository.findAll();
+    public ResponseEntity<Object> getAllBooks() {
+        try {
+            return ApiResponse.success(bookRepository.findAll(), "Books fetched successfully");
+        } catch (Exception e) {
+            throw new BadRequestException("Failed to fetch books");
+        }
     }
 
     @Override
-    public Books addBook(Books book) {
-        return bookRepository.save(book);
+    public ResponseEntity<Object> addBook(Books book) {
+        try {
+            return ApiResponse.created(bookRepository.save(book), "Book added successfully");
+        } catch (Exception e) {
+            throw new BadRequestException("Failed to add book");
+        }
     }
 
     @Override
-    public Books getBookByName(String title) {
-        return bookRepository.findByTitle(title);
+    public ResponseEntity<Object> getBookByName(String title) {
+        try {
+            Books book = bookRepository.findByTitle(title);
+            if (book == null) {
+                throw new ResourceNotFoundException("Book not found with title: " + title);
+            }
+            return ApiResponse.success(book, "Book found");
+        } catch (Exception e) {
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
     @Override
-    public void deleteBook(Integer id) {
-        bookRepository.deleteById(id);
-    }
-    @Override
-    public Books updateBook(Integer id, Books book) {
-
-        Books existingBook = bookRepository.findById(id).orElse(null);
-
-        if (existingBook != null) {
+    public ResponseEntity<Object> updateBook(Integer id, Books book) {
+        try {
+            Books existingBook = bookRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
 
             existingBook.setTitle(book.getTitle());
             existingBook.setAuthor(book.getAuthor());
@@ -51,10 +65,24 @@ public class BookServiceImpl implements BookService {
             existingBook.setPrice(book.getPrice());
             existingBook.setStockQuantity(book.getStockQuantity());
 
-            return bookRepository.save(existingBook);
-        }
+            return ApiResponse.success(bookRepository.save(existingBook), "Book updated successfully");
 
-        return null;
+        } catch (Exception e) {
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
+    @Override
+    public ResponseEntity<Object> deleteBook(Integer id) {
+        try {
+            Books book = bookRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+
+            bookRepository.delete(book);
+            return ApiResponse.success(null, "Book deleted successfully");
+
+        } catch (Exception e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
 }
