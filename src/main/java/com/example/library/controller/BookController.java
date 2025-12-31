@@ -45,4 +45,16 @@ public class BookController {
             @RequestBody Books book) {
         return bookService.updateBook(id, book);
     }
+    // ✅ PAGINATION API
+    @GetMapping("/page")
+    public ResponseEntity<?> getBooksWithPagination(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "bookId") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ResponseEntity.ok(
+                bookService.getBooksWithPagination(page, size, sortBy, sortDir)
+        );
+    }
 }

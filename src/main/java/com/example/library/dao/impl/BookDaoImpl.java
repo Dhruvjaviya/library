@@ -4,6 +4,8 @@ import com.example.library.dao.BookDao;
 import com.example.library.entity.Books;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -59,4 +61,22 @@ public class BookDaoImpl implements BookDao {
                 .getSingleResult();
         return count > 0;
     }
+    @Override
+    public Page<Books> findAll(Pageable pageable) {
+
+        String jpql = "SELECT b FROM Books b";
+        TypedQuery<Books> query = entityManager.createQuery(jpql, Books.class);
+
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<Books> books = query.getResultList();
+
+        Long total = entityManager
+                .createQuery("SELECT COUNT(b) FROM Books b", Long.class)
+                .getSingleResult();
+
+        return new PageImpl<>(books, pageable, total);
+    }
+
 }
