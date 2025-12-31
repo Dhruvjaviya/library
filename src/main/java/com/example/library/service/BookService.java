@@ -14,4 +14,10 @@ public interface BookService {
     ResponseEntity<Object> updateBook(Integer id, Books book);
 
     ResponseEntity<Object> deleteBook(Integer id);
+    ResponseEntity<Object> getBooksWithPagination(
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    );
 }

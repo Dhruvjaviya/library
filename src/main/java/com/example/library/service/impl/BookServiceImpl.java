@@ -7,6 +7,7 @@ import com.example.library.exception.ResourceNotFoundException;
 import com.example.library.service.BookService;
 import com.example.library.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -67,4 +68,24 @@ public class BookServiceImpl implements BookService {
         bookDao.deleteById(id);
         return ApiResponse.success(null, "Book deleted successfully");
     }
+
+    @Override
+    public ResponseEntity<Object> getBooksWithPagination(
+            int page,
+            int size,
+            String sortBy,
+            String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Books> booksPage = bookDao.findAll(pageable);
+
+        return ApiResponse.success(booksPage, "Books fetched successfully");
+    }
+
+
 }
