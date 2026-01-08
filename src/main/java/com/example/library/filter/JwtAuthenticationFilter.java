@@ -22,9 +22,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    private static final List<String> OPEN_ENDPOINTS = List.of(
+    private static final List<String> EXACT_MATCH_ENDPOINTS = List.of(
             "/login",
             "/register"
+    );
+
+    private static final List<String> PREFIX_MATCH_ENDPOINTS = List.of(
+            "/swagger-ui",
+            "/api-docs",
+            "/v3/api-docs",
+            "/swagger-resources",
+            "/webjars"
     );
 
     @Override
@@ -56,7 +64,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isOpenEndpoint(String path) {
-        return OPEN_ENDPOINTS.stream().anyMatch(path::equalsIgnoreCase);
+        // Check exact matches (for /login, /register)
+        if (EXACT_MATCH_ENDPOINTS.stream().anyMatch(path::equalsIgnoreCase)) {
+            return true;
+        }
+        // Check prefix matches (for Swagger UI paths)
+        return PREFIX_MATCH_ENDPOINTS.stream().anyMatch(path::startsWith);
     }
 
     private void unauthorized(HttpServletResponse response, String message) throws IOException {
